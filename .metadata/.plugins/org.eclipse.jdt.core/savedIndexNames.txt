@@ -1,0 +1,6 @@
+INDEX VERSION 1.131+C:\Users\inter\eclipse-workspace\InventoryManager\.metadata\.plugins\org.eclipse.jdt.core
+1865797976.index
+3099556577.index
+554840640.index
+1767262943.index
+2088330447.index

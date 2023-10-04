@@ -1,0 +1,299 @@
+import java.awt.EventQueue;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JFrame;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
+import javax.swing.JComboBox;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import java.awt.Font;
+import java.awt.Image;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.awt.Color;
+import javax.swing.JTextField;
+
+import net.proteanit.sql.DbUtils;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+/***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**/
+public class HomePage {
+
+	Image logo = new ImageIcon(this.getClass().getResource("InternationalUAPLogo2.png")).getImage().getScaledInstance(275,275,Image.SCALE_DEFAULT);
+	private JFrame frame;
+	private JTable resultsTable;
+	private JTextField stkTxt;
+	private JTextField modelTxt2;
+	private JComboBox partBox2;
+	private JComboBox modelBox;
+	private JComboBox makeBox;
+	private JLabel icon;
+	
+	Connection con = null;
+	private JButton btnNewButton_2;
+	private JLabel lblNewLabel_4;
+	private JLabel lblNewLabel_5;
+	private JLabel dateLbl;
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					HomePage window = new HomePage();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public HomePage() {
+		initialize();
+	}
+	
+
+
+		
+	private void makeBox() {
+		try {
+			String make = "select* distinct make from vehicles_at_lot ORDER BY  make ASC";
+			PreparedStatement stmt = con.prepareStatement(make);
+			ResultSet rst = stmt.executeQuery();
+			while(rst.next()) {
+				makeBox.addItem(rst.getString("make"));
+			}
+		}
+		catch(Exception e) {
+			
+		}
+		
+	}
+	
+	private void modelBox() {
+		try {
+			String model = "select* distinct model from vehicles_at_lot  ORDER BY model ASC";
+			PreparedStatement stmt = con.prepareStatement(model);
+			ResultSet rst = stmt.executeQuery();
+			while(rst.next()) {
+				modelBox.addItem(rst.getString("model"));
+			}
+		}
+		catch(Exception e) {
+			
+		}
+		
+	}
+	
+
+
+	private void partCombBox2() {
+		try {
+			String part = "select* from parts";
+			PreparedStatement stmt = con.prepareStatement(part);
+			ResultSet rst = stmt.executeQuery();
+			while(rst.next()) {
+				partBox2.addItem(rst.getString("partname"));
+			}
+		}
+		catch(Exception e) {
+		}
+		
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		con = dbconnector.dbConnector();
+		frame = new JFrame();
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.setBounds(100, 100, 984, 632);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 328, 948, 254);
+		frame.getContentPane().add(scrollPane);
+		
+		resultsTable = new JTable();
+		scrollPane.setViewportView(resultsTable);
+		
+		partBox2 = new JComboBox();
+		partBox2.setBounds(82, 160, 124, 22);
+		frame.getContentPane().add(partBox2);
+		
+		JButton btnNewButton_1 = new JButton("SEARCH");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String query = "select vehicles_at_lot.stk_number,vehicles_at_lot.year,vehicles_at_lot.make,vehicles_at_lot.model,vehicles_at_lot.engine,vehicles_at_lot.trans,parts.part_id,parts.partname,inventory.shelf,inventory.location,inventory.notes"
+							+ " from vehicles_at_lot join inventory on vehicles_at_lot.stk_number = inventory.stk_number join parts on parts.part_id = inventory.part_id "
+							+ " where model = '"+ modelBox.getSelectedItem()+"' and  partname = '"+partBox2.getSelectedItem()+"'order by year";
+					PreparedStatement pst = con.prepareStatement(query);
+					ResultSet rst = pst.executeQuery();
+					resultsTable.setModel(DbUtils.resultSetToTableModel(rst));
+				}catch(Exception ex) {ex.printStackTrace();}
+			}
+		});
+		btnNewButton_1.setBackground(Color.GREEN);
+		btnNewButton_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		btnNewButton_1.setBounds(92, 244, 89, 23);
+		frame.getContentPane().add(btnNewButton_1);
+		
+		JLabel lblNewLabel = new JLabel("SEARCH CAR INFO BY :");
+		lblNewLabel.setFont(new Font("Tempus Sans ITC", Font.BOLD, 14));
+		lblNewLabel.setBounds(696, 55, 179, 42);
+		frame.getContentPane().add(lblNewLabel);
+		
+		stkTxt = new JTextField();
+		stkTxt.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					String query = "select* from vehicles_at_lot where stk_number = ?";
+					PreparedStatement pst = con.prepareStatement(query);
+					pst.setString(1, stkTxt.getText());
+					ResultSet rst = pst.executeQuery();
+					resultsTable.setModel(DbUtils.resultSetToTableModel(rst));
+				}catch(Exception ex) {ex.printStackTrace();}
+			}
+		});
+		stkTxt.setBounds(710, 129, 134, 20);
+		frame.getContentPane().add(stkTxt);
+		stkTxt.setColumns(10);
+		
+		JLabel lblNewLabel_1 = new JLabel("STK #");
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblNewLabel_1.setBounds(755, 98, 54, 14);
+		frame.getContentPane().add(lblNewLabel_1);
+		
+		JLabel lblNewLabel_2 = new JLabel("OR BY MODEL :");
+		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblNewLabel_2.setBounds(720, 160, 112, 14);
+		frame.getContentPane().add(lblNewLabel_2);
+		
+		modelTxt2 = new JTextField();
+		modelTxt2.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					String query = "select* from vehicles_at_lot where model = ?";
+					PreparedStatement pst = con.prepareStatement(query);
+					pst.setString(1, modelTxt2.getText());
+					ResultSet rst = pst.executeQuery();
+					resultsTable.setModel(DbUtils.resultSetToTableModel(rst));
+				}catch(Exception ex) {ex.printStackTrace();}
+				
+			}
+		});
+		modelTxt2.setBounds(710, 189, 134, 20);
+		frame.getContentPane().add(modelTxt2);
+		modelTxt2.setColumns(10);
+		
+		JLabel lblNewLabel_3 = new JLabel("SEARCH PARTS :");
+		lblNewLabel_3.setFont(new Font("Tempus Sans ITC", Font.BOLD | Font.ITALIC, 14));
+		lblNewLabel_3.setBounds(82, 66, 134, 20);
+		frame.getContentPane().add(lblNewLabel_3);
+		
+		btnNewButton_2 = new JButton("MARK SOLD");
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				 int selectedRow = resultsTable.getSelectedRow();
+
+		            // Get the data from the selected row in the JTable
+		            String stk = resultsTable.getValueAt(selectedRow, 0).toString();
+		            String pID = resultsTable.getValueAt(selectedRow, 6).toString();
+				 
+			
+					try  {
+			          
+
+			            // Prepare the INSERT INTO statement to move the data
+			            String insertQuery = "INSERT INTO sales (stk_number, part_id) VALUES (?,?)";
+			            PreparedStatement statement = con.prepareStatement(insertQuery);
+			            statement.setString(1, stk);
+			            statement.setString(2, pID);
+			            
+
+			            // Execute the INSERT INTO statement
+			            statement.executeUpdate();
+
+			        } catch (SQLException e1) {
+			            e1.printStackTrace();
+			           
+			        }
+					try {
+						String deleteQuery = "delete from inventory WHERE stk_number='"+stk+"' and part_id='"+pID+"'";
+					    PreparedStatement statement = con.prepareStatement(deleteQuery);
+			      
+			         // Execute the INSERT INTO statement
+			            statement.executeUpdate();
+			        	JOptionPane.showMessageDialog(null, "Part Marked Sold.");
+					}catch(SQLException e2) {
+					    e2.printStackTrace();
+			            JOptionPane.showMessageDialog(null, "Error! Try Again.");
+			        }
+			}
+		});
+		btnNewButton_2.setBackground(Color.RED);
+		btnNewButton_2.setFont(new Font("Tahoma", Font.BOLD, 12));
+		btnNewButton_2.setBounds(818, 294, 118, 23);
+		frame.getContentPane().add(btnNewButton_2);
+		
+		lblNewLabel_4 = new JLabel("MODEL : ");
+		lblNewLabel_4.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 11));
+		lblNewLabel_4.setBounds(22, 132, 65, 14);
+		frame.getContentPane().add(lblNewLabel_4);
+		
+		lblNewLabel_5 = new JLabel("PART : ");
+		lblNewLabel_5.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 11));
+		lblNewLabel_5.setBounds(22, 161, 46, 14);
+		frame.getContentPane().add(lblNewLabel_5);
+		
+	 icon = new JLabel("");
+	 icon.setBackground(Color.GRAY);
+	 icon.setIcon(new ImageIcon(logo));
+		icon.setBounds(314, 36, 263, 275);
+		frame.getContentPane().add(icon);
+		
+		dateLbl = new JLabel("");
+		dateLbl.setBounds(856, 11, 80, 28);
+		frame.getContentPane().add(dateLbl);
+		
+		 modelBox = new JComboBox();
+		modelBox.setBounds(82, 129, 125, 22);
+		frame.getContentPane().add(modelBox);
+		
+		JLabel lblNewLabel_6 = new JLabel("MAKE : ");
+		lblNewLabel_6.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 11));
+		lblNewLabel_6.setBounds(22, 99, 46, 14);
+		frame.getContentPane().add(lblNewLabel_6);
+		
+		makeBox = new JComboBox();
+		makeBox.setBounds(82, 95, 124, 22);
+		frame.getContentPane().add(makeBox);
+		
+		
+	makeBox();
+		modelBox();
+//		partCombBox();
+		partCombBox2();
+	}
+}
